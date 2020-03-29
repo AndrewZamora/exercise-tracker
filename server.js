@@ -19,6 +19,14 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
 
+app.post('/api/exercise/new-user', (req, res)=>{
+  const username = req.body.username;
+  res.json({username})
+});
+
+app.get('/api/exercise/log?{userId}[&from][&to][&limit]', (req, res)=> {
+
+});
 
 // Not found middleware
 app.use((req, res, next) => {
