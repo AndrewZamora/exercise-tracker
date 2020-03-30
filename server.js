@@ -27,9 +27,12 @@ app.post('/api/exercise/new-user', (req, res)=>{
   const username = req.body.username;
   const newUser = new User({username});
   newUser.save((err, response)=>{
-    res.json({_id: response.id,username})
+    res.json({_id: response.id,username});
   });
-  
+});
+
+app.get('/api/exercise/users', (req, res) => {
+  User.find({}, (err, docs) => res.json(docs));
 });
 
 app.get('/api/exercise/log?{userId}[&from][&to][&limit]', (req, res)=> {
