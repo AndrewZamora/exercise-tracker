@@ -1,27 +1,35 @@
 require('dotenv').config();
-const express = require('express')
-const app = express()
-const bodyParser = require('body-parser')
+const express = require('express');
+const app = express();
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const mongoose = require('mongoose');
 
-const cors = require('cors')
+mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => console.log(err));
+const Schema = mongoose.Schema;
+const userSchema = new Schema({
+  username: String
+});
+const User = mongoose.model("User", userSchema);
 
-const mongoose = require('mongoose')
-mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => console.log(err))
+app.use(cors());
 
-app.use(cors())
-
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 
-app.use(express.static('public'))
+app.use(express.static('public'));
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
 
 app.post('/api/exercise/new-user', (req, res)=>{
   const username = req.body.username;
-  res.json({username})
+  const newUser = new User({username});
+  newUser.save((err, response)=>{
+    res.json({_id: response.id,username})
+  });
+  
 });
 
 app.get('/api/exercise/log?{userId}[&from][&to][&limit]', (req, res)=> {
@@ -53,5 +61,5 @@ app.use((err, req, res, next) => {
 })
 
 const listener = app.listen(process.env.PORT || 3000, () => {
-  console.log('Your app is listening on port ' + listener.address().port)
+  console.log(`Running on: http://localhost:${listener.address().port}/`)
 })
