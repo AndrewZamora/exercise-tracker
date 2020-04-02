@@ -30,35 +30,19 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
 
-app.post('/api/exercise/new-user', (req, res) => {
+app.post('/api/exercise/new-user', async (req, res) => {
   const username = req.body.username;
   const newUser = new User({ username });
-  newUser.save((err, response) => {
-    const exerciseLog = {
-      _id: response.id,
-      username: username,
-      log: [],
-      count: 0
-    };
-    console.log(exerciseLog)
-    const newExerciseLog = new ExerciseLog({ exerciseLog });
-    newExerciseLog.save((err, response) => {
-      if (err) {
-        console.log(err)
-      } else {
-        res.json({ _id: response.id, username });
-      }
-    })
-    // ExerciseLog.create({
-    //   newExerciseLog
-    // }, (err, exerciseLog) => {
-    //   if (err) {
-    //     console.log(err)
-    //   } else {
-    //     res.json({ _id: exerciseLog.id, username });
-    //   }
-    // });
-  });
+  const response = await newUser.save().catch(err => { console.log(err) });
+  const exerciseLog = {
+    _id: response['_id'],
+    username: response.username,
+    log: [],
+    count: 0
+  };
+  const newExerciseLog = new ExerciseLog(exerciseLog);
+  await newExerciseLog.save().catch(err => { console.log(err) });
+  res.json({ _id: response['_id'], username: response.username });
 });
 
 app.get('/api/exercise/users', (req, res) => {
