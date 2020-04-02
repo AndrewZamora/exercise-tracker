@@ -10,7 +10,14 @@ const Schema = mongoose.Schema;
 const userSchema = new Schema({
   username: String
 });
+const exerciseLogSchema = new Schema({
+  _id: String,
+  username: String,
+  log: Array,
+  count: Number
+});
 const User = mongoose.model("User", userSchema);
+const ExerciseLog = mongoose.model("ExerciseLog", exerciseLogSchema);
 
 app.use(cors());
 
@@ -23,11 +30,34 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
 
-app.post('/api/exercise/new-user', (req, res)=>{
+app.post('/api/exercise/new-user', (req, res) => {
   const username = req.body.username;
-  const newUser = new User({username});
-  newUser.save((err, response)=>{
-    res.json({_id: response.id,username});
+  const newUser = new User({ username });
+  newUser.save((err, response) => {
+    const exerciseLog = {
+      _id: response.id,
+      username: username,
+      log: [],
+      count: 0
+    };
+    console.log(exerciseLog)
+    const newExerciseLog = new ExerciseLog({ exerciseLog });
+    newExerciseLog.save((err, response) => {
+      if (err) {
+        console.log(err)
+      } else {
+        res.json({ _id: response.id, username });
+      }
+    })
+    // ExerciseLog.create({
+    //   newExerciseLog
+    // }, (err, exerciseLog) => {
+    //   if (err) {
+    //     console.log(err)
+    //   } else {
+    //     res.json({ _id: exerciseLog.id, username });
+    //   }
+    // });
   });
 });
 
@@ -35,16 +65,15 @@ app.get('/api/exercise/users', (req, res) => {
   User.find({}, (err, docs) => res.json(docs));
 });
 
-app.get('/api/exercise/log?{userId}[&from][&to][&limit]', (req, res)=> {
-
+app.post('/api/exercise/add', (req, res) => {
+  const { userId, description, duration, date } = req.body;
+  res.json(req.body)
 });
 
-// Not found middleware
 app.use((req, res, next) => {
   return next({ status: 404, message: 'not found' })
 })
 
-// Error Handling middleware
 app.use((err, req, res, next) => {
   let errCode, errMessage
 
