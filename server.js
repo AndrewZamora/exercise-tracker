@@ -49,9 +49,13 @@ app.get('/api/exercise/users', (req, res) => {
   User.find({}, (err, docs) => res.json(docs));
 });
 
-app.post('/api/exercise/add', (req, res) => {
+app.post('/api/exercise/add', async (req, res) => {
   const { userId, description, duration, date } = req.body;
-  res.json(req.body)
+  const exerciseLog = await ExerciseLog.findById(userId);
+  const updatedLog = [...exerciseLog.log, { description, duration, date }];
+  const updatedCount = updatedLog.length;
+  const result = await ExerciseLog.findByIdAndUpdate(userId, { log: updatedLog, count: updatedCount }, { new: true }).catch(err => { console.log(err) });
+  res.json(result);
 });
 
 app.use((req, res, next) => {
