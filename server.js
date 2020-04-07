@@ -19,6 +19,12 @@ const exerciseLogSchema = new Schema({
 const User = mongoose.model("User", userSchema);
 const ExerciseLog = mongoose.model("ExerciseLog", exerciseLogSchema);
 
+// Utility
+const formatDate = date => {
+  const now = Date.now();
+
+  return
+};
 app.use(cors());
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -51,11 +57,30 @@ app.get('/api/exercise/users', (req, res) => {
 
 app.post('/api/exercise/add', async (req, res) => {
   const { userId, description, duration, date } = req.body;
+  const required = [{ input: 'userId', type: 'string' }, { input: 'description', type: 'string' }, { input: 'duration', type: 'number' }];
+  const missing = required.filter(item => {
+    if (typeof req.body[item.input] === 'number' && req.body[item.input] > 0 || typeof req.body[item.input] === 'string' && req.body[item.input]) {
+      return false;
+    } else {
+      return true;
+    }
+  });
+  if (missing.length > 0) {
+    const missingInputs = missing.map(item => item.input).join(', ');
+    res.json({
+      error: `Please provide the following: ${missingInputs}`
+    });
+    return;
+  }
   const exerciseLog = await ExerciseLog.findById(userId);
-  const updatedLog = [...exerciseLog.log, { description, duration, date }];
-  const updatedCount = updatedLog.length;
-  const result = await ExerciseLog.findByIdAndUpdate(userId, { log: updatedLog, count: updatedCount }, { new: true }).catch(err => { console.log(err) });
-  res.json(result);
+  if (exerciseLog) {
+    const updatedLog = [...exerciseLog.log, { description, duration, date }];
+    const updatedCount = updatedLog.length;
+    const result = await ExerciseLog.findByIdAndUpdate(userId, { log: updatedLog, count: updatedCount }, { new: true }).catch(err => { console.log(err) });
+    res.json({ username: result.username, _id: userId, description, duration, date });
+  } else {
+    res.json({ error: "User ID is incorrect or does not exist." });
+  }
 });
 
 app.use((req, res, next) => {
