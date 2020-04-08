@@ -21,7 +21,6 @@ const ExerciseLog = mongoose.model("ExerciseLog", exerciseLogSchema);
 
 // Utility
 const formatDate = date => {
-  const now = Date.now();
 
   return
 };
@@ -55,8 +54,15 @@ app.get('/api/exercise/users', (req, res) => {
   User.find({}, (err, docs) => res.json(docs));
 });
 
+app.get('/api/exercise/log', async (req, res) => {
+  // console.log(req.body.userId)
+  // const exerciseLog = await ExerciseLog.findById(req.body.userId);
+  // res.json(exerciseLog)
+});
+
 app.post('/api/exercise/add', async (req, res) => {
-  const { userId, description, duration, date } = req.body;
+  const { userId, description, duration } = req.body;
+  const date = req.body.date ? new Date(req.body.date) : new Date(Date.now());
   const required = [{ input: 'userId', type: 'string' }, { input: 'description', type: 'string' }, { input: 'duration', type: 'number' }];
   const missing = required.filter(item => {
     if (typeof req.body[item.input] === 'number' && req.body[item.input] > 0 || typeof req.body[item.input] === 'string' && req.body[item.input]) {
