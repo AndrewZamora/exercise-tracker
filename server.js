@@ -55,9 +55,8 @@ app.get('/api/exercise/users', (req, res) => {
 });
 
 app.get('/api/exercise/log', async (req, res) => {
-  // console.log(req.body.userId)
-  // const exerciseLog = await ExerciseLog.findById(req.body.userId);
-  // res.json(exerciseLog)
+  const exerciseLog = await ExerciseLog.findById(req.query.userId);
+  res.json(exerciseLog)
 });
 
 app.post('/api/exercise/add', async (req, res) => {
@@ -83,7 +82,7 @@ app.post('/api/exercise/add', async (req, res) => {
     const updatedLog = [...exerciseLog.log, { description, duration, date }];
     const updatedCount = updatedLog.length;
     const result = await ExerciseLog.findByIdAndUpdate(userId, { log: updatedLog, count: updatedCount }, { new: true }).catch(err => { console.log(err) });
-    res.json({ username: result.username, _id: userId, description, duration, date });
+    res.json({ username: result.username, _id: userId, description, duration: parseInt(duration), date });
   } else {
     res.json({ error: "User ID is incorrect or does not exist." });
   }
