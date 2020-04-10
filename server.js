@@ -18,12 +18,6 @@ const exerciseLogSchema = new Schema({
 });
 const User = mongoose.model("User", userSchema);
 const ExerciseLog = mongoose.model("ExerciseLog", exerciseLogSchema);
-
-// Utility
-const formatDate = date => {
-
-  return
-};
 app.use(cors());
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -61,7 +55,7 @@ app.get('/api/exercise/log', async (req, res) => {
 
 app.post('/api/exercise/add', async (req, res) => {
   const { userId, description, duration } = req.body;
-  const date = req.body.date ? new Date(req.body.date) : new Date(Date.now());
+  const date = req.body.date ? new Date(req.body.date) : new Date();
   const required = [{ input: 'userId', type: 'string' }, { input: 'description', type: 'string' }, { input: 'duration', type: 'number' }];
   const missing = required.filter(item => {
     if (typeof req.body[item.input] === 'number' && req.body[item.input] > 0 || typeof req.body[item.input] === 'string' && req.body[item.input]) {
@@ -82,7 +76,7 @@ app.post('/api/exercise/add', async (req, res) => {
     const updatedLog = [...exerciseLog.log, { description, duration, date }];
     const updatedCount = updatedLog.length;
     const result = await ExerciseLog.findByIdAndUpdate(userId, { log: updatedLog, count: updatedCount }, { new: true }).catch(err => { console.log(err) });
-    res.json({ username: result.username, _id: userId, description, duration: parseInt(duration), date });
+    res.json({ username: result.username,description, duration: parseInt(duration), _id: userId, date: date.toDateString() });
   } else {
     res.json({ error: "User ID is incorrect or does not exist." });
   }
