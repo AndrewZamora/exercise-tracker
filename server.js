@@ -49,7 +49,19 @@ app.get('/api/exercise/users', (req, res) => {
 });
 
 app.get('/api/exercise/log', async (req, res) => {
+  const limit = parseInt(req.query.limit);
   const exerciseLog = await ExerciseLog.findById(req.query.userId);
+  if(req.query.from && req.query.to) {
+    exerciseLog.from = new Date(req.query.from);
+    exerciseLog.to = new Date(req.query.to);
+    exerciseLog.log = exerciseLog.log.filter(item => {
+      return (item.date.getTime() >=  exerciseLog.from.getTime() && item.date.getTime() <= exerciseLog.to.getTime())
+    });
+  }
+  if(limit) {
+    exerciseLog.log = exerciseLog.log.splice(0, limit);
+    exerciseLog.count = exerciseLog.log.length;
+  }
   res.json(exerciseLog)
 });
 
@@ -75,7 +87,7 @@ app.post('/api/exercise/add', async (req, res) => {
   if (exerciseLog) {
     const updatedLog = [...exerciseLog.log, { description, duration, date }];
     const updatedCount = updatedLog.length;
-    const result = await ExerciseLog.findByIdAndUpdate(userId, { log: updatedLog, count: updatedCount }, { new: true }).catch(err => { console.log(err) });
+    const result = await ExerciseLog.findByIdAndUpdate(userId, { log: updatedLog, count: updatedCount }, { new: true,  useFindAndModify: false}).catch(err => { console.log(err) });
     res.json({ username: result.username,description, duration: parseInt(duration), _id: userId, date: date.toDateString() });
   } else {
     res.json({ error: "User ID is incorrect or does not exist." });
